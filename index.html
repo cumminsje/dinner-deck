@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dre's Dinner Deck</title>
+<meta name="description" content="Pick a protein and a base, then draw dinners until one sounds good.">
+<meta name="theme-color" content="#FBF8F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111513" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dinner Deck">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <p class="eyebrow" id="eyebrow">Tonight's dinner</p>
+    <div class="titlerow">
+      <h1>Tonight</h1>
+      <span class="deckname">Dre's Dinner Deck</span>
+    </div>
+    <button type="button" class="summary" id="openFilters" aria-haspopup="dialog">
+      <span class="sum-text" id="sumText">Chicken with rice</span>
+      <span class="sum-meta" id="sumMeta"></span>
+      <span class="sum-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filters<b id="filterBadge" hidden></b>
+      </span>
+    </button>
+  </header>
+
+  <main id="stage" aria-live="polite"></main>
+</div>
+
+<nav class="dock" aria-label="Recipe navigation">
+  <div class="dock-in">
+    <button class="back" id="prev" type="button" aria-label="Previous dinner">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="pos" id="pos"></span>
+    <button class="next" id="next" type="button">Next dinner
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</nav>
+
+<dialog class="sheet" id="filters" aria-labelledby="sheetTitle">
+  <div class="sheet-in">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2 id="sheetTitle">What sounds good?</h2>
+      <button type="button" class="done" id="closeFilters">Done</button>
+    </div>
+
+    <section class="fgroup">
+      <div class="fhead"><h3>Protein</h3><button type="button" class="mini" id="allP">Select all</button></div>
+      <div class="chips" id="proteins" role="group" aria-label="Protein"></div>
+    </section>
+
+    <section class="fgroup">
+      <div class="fhead"><h3>Base</h3><button type="button" class="mini" id="allB">Select all</button></div>
+      <div class="chips" id="bases" role="group" aria-label="Base"></div>
+    </section>
+
+    <section class="fgroup">
+      <div class="fhead"><h3>Ready in</h3></div>
+      <div class="seg" id="times" role="radiogroup" aria-label="Ready in"></div>
+    </section>
+
+    <section class="fgroup">
+      <div class="fhead"><h3>Skip ingredients</h3><span class="fnote" id="skipnote">None skipped</span></div>
+      <div class="toggles" id="toggles"></div>
+    </section>
+
+    <p class="sheet-count" id="sheetCount"></p>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
