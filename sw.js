@@ -1,5 +1,5 @@
 /* Offline cache. Bump VERSION whenever any app file changes so phones pick up the update. */
-const VERSION = 'dinner-deck-v1';
+const VERSION = 'dinner-deck-v2';
 const FILES = ['./', 'index.html', 'app.css', 'app.js', 'engine.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

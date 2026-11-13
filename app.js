@@ -26,6 +26,8 @@
   const order = (ids, all) => all.filter(id => ids.includes(id));
 
   let deck = [], idx = 0, wakeLock = null, toastTimer = null;
+  let surprise = null, everything = null; // a Random pick shown over the deck, and the full 2,000-recipe pool
+  const current = () => surprise || deck[idx];
 
   function toast(msg) {
     const t = $('toast'); t.textContent = msg; t.hidden = false;
@@ -36,7 +38,7 @@
     const pool = (state.pids.length && state.bases.length) ? recipesFor(state.pids, state.bases, S(), state.time) : [];
     const keep = keepId ? pool.find(r => r.id === keepId) : null;
     deck = keep ? [keep, ...spreadShuffle(pool.filter(r => r !== keep))] : spreadShuffle(pool);
-    idx = 0;
+    idx = 0; surprise = null;
   }
 
   function chip(id, label, sub, count, on) {
@@ -84,10 +86,13 @@
 
   function renderCard(dir) {
     const stage = $('stage');
-    const r = deck[idx];
-    $('prev').disabled = !deck.length || idx === 0;
-    $('next').disabled = deck.length < 2;
-    $('pos').textContent = deck.length ? `${fmtN(idx + 1)} of ${fmtN(deck.length)}` : 'No matches';
+    const r = current();
+    $('prev').disabled = surprise ? !deck.length : (!deck.length || idx === 0);
+    $('next').disabled = surprise ? !deck.length : deck.length < 2;
+    if (state.pids.length && state.bases.length) {
+      const timeTxt = state.time ? `Ready in ${state.time} min` : 'Any time';
+      $('sumMeta').textContent = `${timeTxt} · ${deck.length ? `${surprise ? 'back to ' : ''}${fmtN(idx + 1)} of ${fmtN(deck.length)}` : 'no matches'}`;
+    }
     if (!r) {
       const none = !state.pids.length || !state.bases.length;
       const msg = none
@@ -105,7 +110,7 @@
     const thermo = r.id.startsWith('eggs|') ? '' : ' Check the thickest piece with an instant-read thermometer.';
     stage.innerHTML = `<article class="card${dir ? (dir > 0 ? ' drawn' : ' drawnBack') : ''}" id="card">
       <header class="hero">
-        <div class="tags"><span class="tag">${esc(r.cuisine)}</span><span class="tag">${esc(r.format)}</span><span class="tag h${r.heat}">${HEAT[r.heat]}</span></div>
+        <div class="tags">${surprise ? '<span class="tag surprise">Random pick</span>' : ''}<span class="tag">${esc(r.cuisine)}</span><span class="tag">${esc(r.format)}</span><span class="tag h${r.heat}">${HEAT[r.heat]}</span></div>
         <h2 class="rtitle">${esc(r.title)}</h2>
         <div class="stats">
           <div class="stat"><span class="k">Calories</span><span class="v">${fmtN(m.kcal)}</span></div>
@@ -158,7 +163,21 @@
   }
 
   function refresh(keepId) { rebuild(keepId); renderControls(); renderCard(0); save(); }
+  function randomPick() {
+    if (!everything) everything = recipesFor(ALL_P, ALL_B, new Set(), 0);
+    const now = current();
+    let pick;
+    do { pick = everything[Math.floor(Math.random() * everything.length)]; } while (everything.length > 1 && now && pick.id === now.id);
+    surprise = pick;
+    renderCard(1);
+  }
   function step(d) {
+    if (surprise) {
+      // leaving a Random pick returns to the filtered deck where you left it
+      surprise = null;
+      if (!deck.length) { renderCard(0); return; }
+      if (d < 0) { renderCard(-1); return; }
+    }
     if (!deck.length) return;
     if (d > 0) {
       if (idx === deck.length - 1) {
@@ -227,6 +246,7 @@
   });
   $('next').addEventListener('click', () => step(1));
   $('prev').addEventListener('click', () => step(-1));
+  $('rand').addEventListener('click', randomPick);
   $('stage').addEventListener('click', e => {
     const t = e.target.closest('button'); if (!t) return;
     if (t.id === 'splus' || t.id === 'sminus') {
@@ -234,9 +254,9 @@
       save(); const y = window.scrollY; renderCard(0); window.scrollTo(0, y);
       const again = $(t.id); if (again && !again.disabled) again.focus({ preventScroll: true });
     } else if (t.id === 'copy') {
-      copyText(grocery(deck[idx], state.servings), 'Grocery list copied');
+      copyText(grocery(current(), state.servings), 'Grocery list copied');
     } else if (t.id === 'copyall') {
-      copyText(recipeText(deck[idx], state.servings), 'Recipe copied');
+      copyText(recipeText(current(), state.servings), 'Recipe copied');
     } else if (t.dataset.fix) {
       if (t.dataset.fix === 'open') { openSheet(); return; }
       if (t.dataset.fix === 'time') state.time = 0; else state.skips = [];
